@@ -1,5 +1,5 @@
 {
-  "name": "@boilerplate/temporalio",
+  "name": "@temporal-messaging-ai-demo/temporalio",
   "version": "0.0.1",
   "license": "MIT",
   "main": "./dist/index.js",
@@ -13,11 +13,11 @@
     "lint": "TIMING=1 eslint \"**/*.ts*\""
   },
   "dependencies": {
-    "@boilerplate/common": "*",
+    "@temporal-messaging-ai-demo/common": "*",
     "@temporalio/client": "^1.11.5"
   },
   "devDependencies": {
-    "@boilerplate/tsconfig": "*",
+    "@temporal-messaging-ai-demo/tsconfig": "*",
     "eslint": "^8.57.1",
     "tsup": "^8.3.5",
     "typescript": "^5.6.3"

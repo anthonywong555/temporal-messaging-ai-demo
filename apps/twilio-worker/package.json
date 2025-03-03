@@ -1,5 +1,5 @@
 {
-  "name": "@temporal-messaging-ai-demo/worker",
+  "name": "@temporal-messaging-ai-demo/twilio-worker",
   "version": "0.0.1",
   "private": true,
   "scripts": {

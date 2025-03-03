@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import * as proto from '@temporalio/proto';
 import yargs from 'yargs/yargs';
-import { PAYLOAD_CODECS_KEY_ID, EncryptionCodec } from '@boilerplate/temporalio';
+import { PAYLOAD_CODECS_KEY_ID, EncryptionCodec } from '@temporal-messaging-ai-demo/temporalio';
 
 type Payload = proto.temporal.api.common.v1.IPayload;
 

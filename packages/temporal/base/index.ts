@@ -1,5 +1,5 @@
 import { Connection, Client } from '@temporalio/client';
-import { getEnv } from '@boilerplate/common';
+import { getEnv } from '@temporal-messaging-ai-demo/common';
 import fs from 'fs/promises';
 import { getDataConverter } from '../encryption';
 

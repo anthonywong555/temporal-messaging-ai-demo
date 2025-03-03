@@ -10,7 +10,7 @@ RUN npm install -g turbo
 COPY . .
 
 # Create a pruned version of web
-RUN turbo prune @boilerplate/codec-server --docker
+RUN turbo prune @temporal-messaging-ai-demo/codec-server --docker
 
 # 2. Building out the project. Not sure why it's called installer. Why not, ¯\_(ツ)_/¯.
 FROM base as installer
@@ -27,7 +27,7 @@ COPY --from=builder /app/out/full .
 
 # When running this build, it will also push the sourcemaps into Sentry.
 # This is because of the apps/web/vite.config.ts
-RUN turbo build --filter=@boilerplate/codec-server
+RUN turbo build --filter=@temporal-messaging-ai-demo/codec-server
 
 # Running the web
 FROM base AS runner

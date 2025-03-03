@@ -1,5 +1,5 @@
 {
-  "name": "@boilerplate/codec-server",
+  "name": "@temporal-messaging-ai-demo/codec-server",
   "version": "0.0.1",
   "main": "dist/index.js",
   "private": true,
@@ -22,8 +22,8 @@
     ]
   },
   "dependencies": {
-    "@boilerplate/common": "*",
-    "@boilerplate/temporalio": "*",
+    "@temporal-messaging-ai-demo/common": "*",
+    "@temporal-messaging-ai-demo/temporalio": "*",
     "@temporalio/proto": "^1.11.7",
     "cors": "^2.8.5",
     "express": "^4.18.0",

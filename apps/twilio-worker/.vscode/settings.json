@@ -1,0 +1,3 @@
+{
+    "temporal.replayerEntrypoint": "../worker/scripts/debug-replayer.ts"
+}

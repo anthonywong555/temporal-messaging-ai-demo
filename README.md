@@ -18,7 +18,7 @@ This repository demonstrates how to orchestrate messaging communication with an 
 ## How to get started:
 
 1. git clone.
-1. npm install.
+1. npm install
 1. npm run dev
 
 ## Deploying to ☁️
