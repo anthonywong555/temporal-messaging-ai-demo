@@ -1,0 +1,60 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*", ".env.*"],
+      "outputs": [".svelte-kit/**", "lib/**", "dist/**"]
+    },
+    "lint": {},
+    "dev": {
+      "env": [
+        "NODE_ENV", 
+        "TEMPORAL_ADDRESS",
+        "TEMPORAL_NAMESPACE",
+        "TEMPORAL_TASK_QUEUE",
+        "TEMPORAL_TLS_CERT",
+        "TEMPORAL_TLS_KEY",
+        "TEMPORAL_API_KEY",
+        "TEMPORAL_AUTH_METHOD",
+        "TEMPORAL_BASE_URL"
+      ],
+      "cache": false,
+      "persistent": true
+    },
+    "dev:watch": {
+      "env": [
+        "NODE_ENV", 
+        "TEMPORAL_ADDRESS",
+        "TEMPORAL_NAMESPACE",
+        "TEMPORAL_TASK_QUEUE",
+        "TEMPORAL_TLS_CERT",
+        "TEMPORAL_TLS_KEY",
+        "TEMPORAL_API_KEY",
+        "TEMPORAL_AUTH_METHOD",
+        "TEMPORAL_BASE_URL"
+      ],
+      "cache": false,
+      "persistent": true
+    },
+    "preview": {
+      "dependsOn": ["build"],
+      "env": [
+        "NODE_ENV", 
+        "TEMPORAL_ADDRESS",
+        "TEMPORAL_NAMESPACE",
+        "TEMPORAL_TASK_QUEUE",
+        "TEMPORAL_TLS_CERT",
+        "TEMPORAL_TLS_KEY",
+        "TEMPORAL_API_KEY",
+        "TEMPORAL_AUTH_METHOD",
+        "TEMPORAL_BASE_URL"
+      ],
+      "cache": false,
+      "persistent": true
+    },
+    "clean": {
+      "cache": false
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# Worker Toml
+app = "temporal-worker"
+primary_region = "ewr"
+
+[build]
+  dockerfile = "../apps/worker/fly.Dockerfile"
+  ignorefile = "../apps/worker/.dockerignore"
+
+[[vm]]
+  memory = '4gb'
+  cpu_kind = 'performance'
+  cpus = 1
+
+[[metrics]]
+  port = 9464
+  path = '/metrics'

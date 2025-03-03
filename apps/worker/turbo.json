@@ -1,0 +1,30 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": [
+    "//"
+  ],
+  "tasks": {
+    "build:code": {
+      "dependsOn": ["^build:code"],
+      "cache": false
+    },
+    "build:workflows": {
+      "dependsOn": ["build:code"],
+      "cache": false
+    },
+    "sentry:sourcemaps:inject": {
+        "dependsOn": ["build:workflows"],
+        "cache": false
+    },
+    "sentry:sourcemaps:upload": {
+      "dependsOn": ["sentry:sourcemaps:inject"]
+    },
+    "build": {
+      "dependsOn": ["build:code", "build:workflows", "sentry:sourcemaps:inject", "sentry:sourcemaps:upload"],
+      "outputs": ["dist/**"]
+    },
+    "preview": {
+      "cache": false
+    }
+  }
+}
