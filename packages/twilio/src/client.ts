@@ -1,4 +1,5 @@
 import twilio from 'twilio';
+import type { MessageInstance, MessageListInstanceCreateOptions } from 'twilio/lib/rest/api/v2010/account/message';
 
 export class TwilioClient {
   client: twilio.Twilio;
@@ -9,7 +10,7 @@ export class TwilioClient {
     this.defaultPhoneNumber = defaultPhoneNumber;
   }
 
-  async createMessage(payload: any) {
+  async createMessage(payload: MessageListInstanceCreateOptions):Promise<MessageInstance> {
     const newPayload = this.defaultPhoneNumber ? 
       {...payload, from: this.defaultPhoneNumber} : 
       payload;

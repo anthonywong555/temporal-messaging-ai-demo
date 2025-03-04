@@ -1,8 +1,26 @@
 import { proxyActivities, workflowInfo, defineSignal, setHandler, condition, continueAsNew } from '@temporalio/workflow';
 import type { WorkflowRequestChat, WorkflowSignalMessage } from './types';
+import { createTwilioActivites } from '@temporal-messaging-ai-demo/twilio';
 
+/**
+ * Activities
+ */
+const { twilioMessageCreate } = proxyActivities<ReturnType<typeof createTwilioActivites>>({
+  startToCloseTimeout: '1m',
+  retry: {
+    maximumInterval: '5s', // Just for demo purposes. Usually this should be larger.
+  },
+  taskQueue: 'twilio'
+});
+
+/**
+ * Signals
+ */
 export const addMessage = defineSignal<[WorkflowSignalMessage]>('addMessage'); 
 
+/**
+ * CONSTANT
+ */
 export const AI_MODEL_ANTHROPIC = 'anthropic';
 export const AI_MODEL_OPEN_AI = 'openai';
 export const AI_MODEL_OLLAMA = 'ollama';

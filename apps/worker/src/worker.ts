@@ -3,7 +3,6 @@ import { getSentryWorkerOptions, sentryDSN } from './sentry/instrument';
 import { getEnv, env } from '@temporal-messaging-ai-demo/common';
 import { namespace, getConnectionOptions, taskQueue, getDataConverter } from '@temporal-messaging-ai-demo/temporalio';
 import { getWorkflowOptions, getTelemetryOptions, withOptionalStatusServer } from './env';
-import * as activities from './sharable-activites';
 import * as sentryActivites from './sentry/activites';
 import { NativeConnection, Runtime, Worker} from '@temporalio/worker';
 
@@ -24,12 +23,8 @@ async function run() {
       connection,
       namespace,
       taskQueue,
-      activities: {...activities, 
-        ...(sentryDSN ? sentryActivites: {})
-      },
       dataConverter: await getDataConverter(),
-      ...getWorkflowOptions(),
-      ...getSentryWorkerOptions()
+      ...getWorkflowOptions()
     });
 
     const statusPort = getEnv('TEMPORAL_WORKER_STATUS_HTTP_PORT', '');

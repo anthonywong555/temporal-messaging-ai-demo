@@ -1,17 +1,15 @@
 import 'dotenv/config';
-import { getSentryWorkerOptions, sentryDSN } from './sentry/instrument';
 import { getEnv, env } from '@temporal-messaging-ai-demo/common';
 import { namespace, getConnectionOptions, taskQueue, getDataConverter } from '@temporal-messaging-ai-demo/temporalio';
-import { getWorkflowOptions, getTelemetryOptions, withOptionalStatusServer } from './env';
-import * as activities from './sharable-activites';
-import * as sentryActivites from './sentry/activites';
+import { getTelemetryOptions, withOptionalStatusServer } from './env';
+import { createTwilioActivites, TwilioClient } from '@temporal-messaging-ai-demo/twilio';
 import { NativeConnection, Runtime, Worker} from '@temporalio/worker';
 
 console.info(`🤖: Node_ENV = ${env}`);
 
 async function run() {
   try {
-    console.info('🤖: Temporal Worker Coming Online...');
+    console.info('🤖📞: Twilio Worker Coming Online...');
     const connectionOptions = await getConnectionOptions(process.env);
     const telemetryOptions = getTelemetryOptions();
 
@@ -20,16 +18,19 @@ async function run() {
     }
 
     const connection = await NativeConnection.connect(connectionOptions);
+
+    // Activities Dependency Injection
+    const twilioAccountSid = getEnv('TWILIO_ACCOUNT_SID');
+    const twilioAPIKey = getEnv('TWILIO_API_KEY');
+    const twilioAPISecret = getEnv('TWILIO_API_SECRET');
+    const twilioClient = new TwilioClient(twilioAccountSid, twilioAPIKey, twilioAPISecret);
+
     const worker = await Worker.create({
       connection,
       namespace,
       taskQueue,
-      activities: {...activities, 
-        ...(sentryDSN ? sentryActivites: {})
-      },
+      activities: {...createTwilioActivites(twilioClient)},
       dataConverter: await getDataConverter(),
-      ...getWorkflowOptions(),
-      ...getSentryWorkerOptions()
     });
 
     const statusPort = getEnv('TEMPORAL_WORKER_STATUS_HTTP_PORT', '');

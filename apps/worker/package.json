@@ -33,6 +33,7 @@
   "dependencies": {
     "@temporal-messaging-ai-demo/common": "*",
     "@temporal-messaging-ai-demo/temporalio": "*",
+    "@temporal-messaging-ai-demo/twilio": "*",
     "@sentry/cli": "^2.33.1",
     "@sentry/core": "^8.47.0",
     "@sentry/node": "^8.9.2",
