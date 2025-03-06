@@ -1,6 +1,9 @@
 import { proxyActivities, workflowInfo, defineSignal, setHandler, condition, continueAsNew } from '@temporalio/workflow';
 import type { WorkflowRequestChat, WorkflowSignalMessage } from './types';
 import { createTwilioActivites } from '@temporal-messaging-ai-demo/twilio';
+import { createAnthropicActivites } from '@temporal-messaging-ai-demo/anthropic-ai';
+import { createOpenAIActivites } from '@temporal-messaging-ai-demo/openai';
+import type Anthropic from '@anthropic-ai/sdk';
 
 /**
  * Activities
@@ -9,8 +12,27 @@ const { twilioMessageCreate } = proxyActivities<ReturnType<typeof createTwilioAc
   startToCloseTimeout: '1m',
   retry: {
     maximumInterval: '5s', // Just for demo purposes. Usually this should be larger.
+    maximumAttempts: 3
   },
   taskQueue: 'twilio'
+});
+
+const { anthropicCreateMessage } = proxyActivities<ReturnType<typeof createAnthropicActivites>>({
+  startToCloseTimeout: '1m',
+  retry: {
+    maximumInterval: '5s', // Just for demo purposes. Usually this should be larger.
+    maximumAttempts: 3
+  },
+  taskQueue: 'anthropic'
+});
+
+const { openAICreateMessage } = proxyActivities<ReturnType<typeof createOpenAIActivites>>({
+  startToCloseTimeout: '1m',
+  retry: {
+    maximumInterval: '5s', // Just for demo purposes. Usually this should be larger.
+    maximumAttempts: 3
+  },
+  taskQueue: 'openai'
 });
 
 /**
@@ -30,7 +52,7 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
 
   // TODO: This should be read from the .env, but good enough for now.
   const { 
-    aiModel = AI_MODEL_ANTHROPIC, 
+    aiModel = AI_MODEL_OPEN_AI, 
     chatSlidingWindowInSecs = 60, 
     waitingForUserResponseInMins = 10,
     userPhoneNumber, 
@@ -59,13 +81,41 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
   }
 
   // 0. Collect the user messages.
-  const userMessage = userMessages.concat('\n');
+  const userMessage = userMessages.join('\n');
 
+  let aiMessages = [];
   // 1. Send the message to 🤖
   switch(aiModel) {
     case AI_MODEL_ANTHROPIC:
+      const anthropicResponse = await anthropicCreateMessage({
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: userMessage
+        }],
+        model: 'claude-3-sonnet-latest'
+      });
+      for(const aContent of anthropicResponse.content) {
+        const aTextBlock = aContent as Anthropic.TextBlock;
+        
+        if(aTextBlock.text) {
+          aiMessages.push(aTextBlock.text);
+        }
+      }
       break;
     case AI_MODEL_OPEN_AI:
+      const openAIResponse = await openAICreateMessage({
+        messages: [{
+          role: 'user',
+          content: userMessage
+        }],
+        model: 'chatgpt-4o-latest'
+      });
+      for(const aChoice of openAIResponse.choices) {
+        if(aChoice.message && aChoice.message.content) {
+          aiMessages.push(aChoice.message.content);
+        }
+      }
       break;
     case AI_MODEL_OLLAMA: 
       break;
@@ -76,9 +126,26 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
       // 3. Fail the Workflow.
       return;
   }
+
+  // If there's no message from 🤖.
+  if(aiMessages.length === 0) {
+    await twilioMessageCreate({
+      to: userPhoneNumber,
+      from: programmablePhoneNumber,
+      body: `Sorry, but there has been an issue with the 🤖. Please try again later 🙏.`
+    });
+
+    return;
+  }
   
   // 2. Send it to the 💬 Provider
+  await twilioMessageCreate({
+    to: userPhoneNumber,
+    from: programmablePhoneNumber,
+    body: aiMessages.join(`\n`)
+  });
 
+  return;
   // 3. Check to see if you need to do Continue As New
 
   //workflowInfo().continueAsNewSuggested
