@@ -12,15 +12,8 @@
       "dependsOn": ["build:code"],
       "cache": false
     },
-    "sentry:sourcemaps:inject": {
-        "dependsOn": ["build:workflows"],
-        "cache": false
-    },
-    "sentry:sourcemaps:upload": {
-      "dependsOn": ["sentry:sourcemaps:inject"]
-    },
     "build": {
-      "dependsOn": ["build:code", "build:workflows", "sentry:sourcemaps:inject", "sentry:sourcemaps:upload"],
+      "dependsOn": ["build:code", "build:workflows"],
       "outputs": ["dist/**"]
     },
     "preview": {

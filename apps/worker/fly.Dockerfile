@@ -26,17 +26,7 @@ RUN npm ci
 # Build the project and its dependencies
 COPY --from=builder /app/out/full .
 
-# When running this build, it will also push the sourcemaps into Sentry.
-# This is because of the apps/worker/turbo.json
-RUN --mount=type=secret,id=SENTRY_URL \
-    --mount=type=secret,id=SENTRY_ORG \
-    --mount=type=secret,id=SENTRY_PROJECT \
-    --mount=type=secret,id=SENTRY_AUTH_TOKEN \
-    SENTRY_URL="$(cat /run/secrets/SENTRY_URL)" \
-    SENTRY_ORG="$(cat /run/secrets/SENTRY_ORG)" \
-    SENTRY_PROJECT="$(cat /run/secrets/SENTRY_PROJECT)" \
-    SENTRY_AUTH_TOKEN="$(cat /run/secrets/SENTRY_AUTH_TOKEN)" \
-    turbo build --filter=@temporal-messaging-ai-demo/worker
+RUN turbo build --filter=@temporal-messaging-ai-demo/worker
 
     # Running the Worker
 FROM base AS runner

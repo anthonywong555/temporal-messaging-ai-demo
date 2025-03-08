@@ -14,8 +14,6 @@
     "start.watch": "nodemon src/worker.ts",
     "workflow": "ts-node src/client.ts",
     "preview": "node --env-file=.env.preview.local dist/worker.js",
-    "sentry:sourcemaps:inject": "sentry-cli sourcemaps inject ./dist",
-    "sentry:sourcemaps:upload": "sentry-cli sourcemaps upload --org=$SENTRY_ORG --project=$SENTRY_PROJECT --auth-token=$SENTRY_AUTH_TOKEN --release=0.0.1 ./dist --log-level=debug",
     "full:dev": "npm run build:code && npm run build:workflows && npm run sentry:sourcemaps:inject && npm run sentry:sourcemaps:upload"
   },
   "nodemonConfig": {
