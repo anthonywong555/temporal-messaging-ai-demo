@@ -9,7 +9,7 @@ console.info(`🤖: Node_ENV = ${env}`);
 
 async function run() {
   try {
-    console.info('🤖📞: OpenAI Worker Coming Online...');
+    console.info('🤖: OpenAI Worker Coming Online...');
     const connectionOptions = await getConnectionOptions(process.env);
     const telemetryOptions = getTelemetryOptions();
 

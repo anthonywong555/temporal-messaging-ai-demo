@@ -9,7 +9,7 @@ console.info(`🤖: Node_ENV = ${env}`);
 
 async function run() {
   try {
-    console.info('🤖📞: Twilio Worker Coming Online...');
+    console.info('📞: Twilio Worker Coming Online...');
     const connectionOptions = await getConnectionOptions(process.env);
     const telemetryOptions = getTelemetryOptions();
 
