@@ -3,7 +3,7 @@ import { getEnv, env } from '@temporal-messaging-ai-demo/common';
 import { namespace, getConnectionOptions, taskQueue, getDataConverter } from '@temporal-messaging-ai-demo/temporalio';
 import { getTelemetryOptions, withOptionalStatusServer } from './env';
 import { createTwilioActivites, TwilioClient } from '@temporal-messaging-ai-demo/twilio';
-import { NativeConnection, Runtime, Worker} from '@temporalio/worker';
+import { NativeConnection, ResourceBasedTunerOptions, Runtime, Worker, WorkerTuner} from '@temporalio/worker';
 
 console.info(`🤖: Node_ENV = ${env}`);
 
@@ -25,7 +25,28 @@ async function run() {
     const twilioAPISecret = getEnv('TWILIO_API_SECRET');
     const twilioClient = new TwilioClient(twilioAccountSid, twilioAPIKey, twilioAPISecret);
 
+    const resourceBasedTunerOptions:ResourceBasedTunerOptions = {
+      targetMemoryUsage: 0.7,
+      targetCpuUsage: 0.7,
+    };
+  
+    const tuner:WorkerTuner = {
+      workflowTaskSlotSupplier: {
+        type: 'fixed-size',
+        numSlots: 0
+      }, 
+      activityTaskSlotSupplier: {
+        type: 'resource-based',
+        tunerOptions: resourceBasedTunerOptions
+      }, 
+      localActivityTaskSlotSupplier: {
+        type: 'fixed-size',
+        numSlots: 0
+      }
+    };
+
     const worker = await Worker.create({
+      tuner,
       connection,
       namespace,
       taskQueue,

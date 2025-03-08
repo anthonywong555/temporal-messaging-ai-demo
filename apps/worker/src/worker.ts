@@ -4,7 +4,7 @@ import { getEnv, env } from '@temporal-messaging-ai-demo/common';
 import { namespace, getConnectionOptions, taskQueue, getDataConverter } from '@temporal-messaging-ai-demo/temporalio';
 import { getWorkflowOptions, getTelemetryOptions, withOptionalStatusServer } from './env';
 import * as sentryActivites from './sentry/activites';
-import { NativeConnection, Runtime, Worker} from '@temporalio/worker';
+import { NativeConnection, Runtime, Worker, ResourceBasedTunerOptions, WorkerTuner} from '@temporalio/worker';
 
 console.info(`🤖: Node_ENV = ${env}`);
 
@@ -18,13 +18,34 @@ async function run() {
       Runtime.install(telemetryOptions);
     }
 
+    const resourceBasedTunerOptions:ResourceBasedTunerOptions = {
+      targetMemoryUsage: 0.7,
+      targetCpuUsage: 0.7,
+    };
+  
+    const tuner:WorkerTuner = {
+      workflowTaskSlotSupplier: {
+        type: 'resource-based',
+        tunerOptions: resourceBasedTunerOptions
+      }, 
+      activityTaskSlotSupplier: {
+        type: 'fixed-size',
+        numSlots: 0
+      }, 
+      localActivityTaskSlotSupplier: {
+        type: 'fixed-size',
+        numSlots: 0
+      }
+    };
+
     const connection = await NativeConnection.connect(connectionOptions);
     const worker = await Worker.create({
+      tuner,
       connection,
       namespace,
       taskQueue,
       dataConverter: await getDataConverter(),
-      ...getWorkflowOptions()
+      ...getWorkflowOptions(),
     });
 
     const statusPort = getEnv('TEMPORAL_WORKER_STATUS_HTTP_PORT', '');
