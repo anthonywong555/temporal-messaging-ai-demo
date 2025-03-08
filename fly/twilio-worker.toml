@@ -1,13 +1,13 @@
-app = 'temporal-worker-wild-surf-7014'
+app = 'twilio-worker'
 primary_region = 'ewr'
 
 [build]
-  dockerfile = '../apps/worker/fly.Dockerfile'
-  ignorefile = '../apps/worker/.dockerignore'
+  dockerfile = '../apps/twilio-worker/fly.Dockerfile'
+  ignorefile = '../apps/twilio-worker/.dockerignore'
 
 [env]
-  TEMPORAL_TASK_QUEUE = 'general'
   NODE_ENV = 'production'
+  TEMPORAL_TASK_QUEUE = 'twilio'
   TEMPORAL_WORKER_STATUS_HTTP_PORT = '3001'
   TEMPORAL_WORKER_METRIC = 'PROMETHEUS'
   TEMPORAL_METRICS_PROMETHEUS_ADDRESS = '0.0.0.0:9464'

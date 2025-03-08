@@ -26,7 +26,7 @@ RUN npm ci
 # Build the project and its dependencies
 COPY --from=builder /app/out/full .
 
-RUN turbo build --filter=@temporal-messaging-ai-demo/worker
+RUN turbo build --filter=@temporal-messaging-ai-demo/openai-worker
 
     # Running the Worker
 FROM base AS runner
