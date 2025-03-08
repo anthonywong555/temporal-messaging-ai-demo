@@ -43,10 +43,11 @@ export const addMessage = defineSignal<[WorkflowSignalMessage]>('addMessage');
 /**
  * CONSTANT
  */
-export const AI_MODEL_ANTHROPIC = 'anthropic';
-export const AI_MODEL_OPEN_AI = 'openai';
-export const AI_MODEL_OLLAMA = 'ollama';
+export const AI_MODEL_ANTHROPIC = 'Anthropic';
+export const AI_MODEL_OPEN_AI = 'OpenAI';
+export const AI_MODEL_OLLAMA = 'Ollama';
 const TEMPORAL_REQUEST_BLOB_SIZE_IN_BYTES = 2097152;
+const TEMPORAL_REQUEST_BLOB_SIZE_IN_CHARACTERS = 2097152;
 
 export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
   let userMessages: Array<string> = [];
@@ -149,23 +150,37 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
       'role': 'assistant',
       'content': aiMessage
     })
-    const outboundAIMessages = chunkString(aiMessage, 1600);
+    
+    // The max number of characters you can send to Twilio is 1600
+    const outboundAIMessages = chunkString(aiMessage, 1500);
 
-    for(const aMessage of outboundAIMessages) {
+    if(outboundAIMessages.length === 1) {
       await twilioMessageCreate({
         to: userPhoneNumber,
         from: programmablePhoneNumber,
-        body: aMessage
+        body: outboundAIMessages[0]
       });
+    } else {
+      let part = 1;
+      for(const aMessage of outboundAIMessages) {
+        await twilioMessageCreate({
+          to: userPhoneNumber,
+          from: programmablePhoneNumber,
+          body: `${aiModel} [${part}/${outboundAIMessages.length}]\n${aMessage}`
+        });
+        part = part + 1;
+      }
     }
 
     timer = new UpdatableTimer(Date.now() + waitingForUserResponseCalculation);
     userMessages = [];
-  } while(!workflowInfo().continueAsNewSuggested);
 
-  while(byteSize(aRequest) > TEMPORAL_REQUEST_BLOB_SIZE_IN_BYTES ) {
-    messageHistory.shift();
-  }
+    // Reducing the message history size so we can ensure the activity call 
+    // doesn't fail due to Payload SIZE to Large
+    while(getCharacterLength(messageHistory) > TEMPORAL_REQUEST_BLOB_SIZE_IN_BYTES ) {
+      messageHistory.shift();
+    }
+  } while(!workflowInfo().continueAsNewSuggested);
 
   await continueAsNew<typeof chat>(aRequest);
 }
@@ -175,9 +190,9 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
  * @param json 
  * @returns 
  */
-function byteSize(json: any) {
+function getCharacterLength(json: any) {
   const jsonString = JSON.stringify(json);
-  return new Blob([jsonString]).size;
+  return jsonString.length;
 }
 
 /**
