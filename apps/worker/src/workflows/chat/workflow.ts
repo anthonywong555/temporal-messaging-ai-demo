@@ -46,9 +46,11 @@ export const addMessage = defineSignal<[WorkflowSignalMessage]>('addMessage');
 export const AI_MODEL_ANTHROPIC = 'anthropic';
 export const AI_MODEL_OPEN_AI = 'openai';
 export const AI_MODEL_OLLAMA = 'ollama';
+const TEMPORAL_REQUEST_BLOB_SIZE_IN_BYTES = 2097152;
 
 export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
   let userMessages: Array<string> = [];
+  let { messageHistory = [] } = aRequest;
 
   // TODO: This should be read from the .env, but good enough for now.
   const { 
@@ -56,103 +58,141 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
     chatSlidingWindowInSecs = 60, 
     waitingForUserResponseInMins = 10,
     userPhoneNumber, 
-    programmablePhoneNumber } = aRequest;
+    programmablePhoneNumber 
+  } = aRequest;
 
   // Create a Sliding Window
   // Allow users to send a chain of messages before sending over to an 🤖.
-  const slidingWindowForCalculation = chatSlidingWindowInSecs * 1000;
-  const targetDeadline = Date.now() + slidingWindowForCalculation;
-  const timer = new UpdatableTimer(targetDeadline);
+  const waitingForUserResponseCalculation = waitingForUserResponseInMins * 60 * 1000;
+  const targetDeadline = Date.now() + waitingForUserResponseCalculation;
+  let timer = new UpdatableTimer(targetDeadline);
   
   setHandler(addMessage, (aMessage: WorkflowSignalMessage) => {
     userMessages.push(aMessage.message);
 
     // Reset the sliding window to a new target deadline.
+    const slidingWindowForCalculation = chatSlidingWindowInSecs * 1000;
     timer.deadline = Date.now() + slidingWindowForCalculation;
   });
 
-  // 💤 on the sliding window.
-  await timer;
+  do {
+    // 💤 on the sliding window.
+    await timer;
 
-  // If there's no message within the history
-  // then simply end the workflow
-  if(userMessages.length === 0) {
-    return;
-  }
-
-  // 0. Collect the user messages.
-  const userMessage = userMessages.join('\n');
-
-  let aiMessages = [];
-  // 1. Send the message to 🤖
-  switch(aiModel) {
-    case AI_MODEL_ANTHROPIC:
-      const anthropicResponse = await anthropicCreateMessage({
-        max_tokens: 1024,
-        messages: [{
-          role: 'user',
-          content: userMessage
-        }],
-        model: 'claude-3-sonnet-latest'
-      });
-      for(const aContent of anthropicResponse.content) {
-        const aTextBlock = aContent as Anthropic.TextBlock;
-        
-        if(aTextBlock.text) {
-          aiMessages.push(aTextBlock.text);
-        }
-      }
-      break;
-    case AI_MODEL_OPEN_AI:
-      const openAIResponse = await openAICreateMessage({
-        messages: [{
-          role: 'user',
-          content: userMessage
-        }],
-        model: 'chatgpt-4o-latest'
-      });
-      for(const aChoice of openAIResponse.choices) {
-        if(aChoice.message && aChoice.message.content) {
-          aiMessages.push(aChoice.message.content);
-        }
-      }
-      break;
-    case AI_MODEL_OLLAMA: 
-      break;
-    default:
-      // TODO
-      // 1. Send the user the following message: "There's an internal error".
-      // 2. Report an error in Sentry.
-      // 3. Fail the Workflow.
+    // If there's no message within the history
+    // then simply end the workflow
+    if(userMessages.length === 0) {
       return;
-  }
+    }
 
-  // If there's no message from 🤖.
-  if(aiMessages.length === 0) {
-    await twilioMessageCreate({
-      to: userPhoneNumber,
-      from: programmablePhoneNumber,
-      body: `Sorry, but there has been an issue with the 🤖. Please try again later 🙏.`
+    // 0. Collect the user messages.
+    const userMessage = userMessages.join('\n');
+    messageHistory.push({
+      role: 'user',
+      content: userMessage
     });
 
-    return;
+    let aiMessages = [];
+    // 1. Send the message to 🤖
+    switch(aiModel) {
+      case AI_MODEL_ANTHROPIC:
+        const anthropicResponse = await anthropicCreateMessage({
+          max_tokens: 1024,
+          messages: messageHistory,
+          model: 'claude-3-sonnet-latest'
+        });
+        for(const aContent of anthropicResponse.content) {
+          const aTextBlock = aContent as Anthropic.TextBlock;
+          
+          if(aTextBlock.text) {
+            aiMessages.push(aTextBlock.text);
+          }
+        }
+        break;
+      case AI_MODEL_OPEN_AI:
+        const openAIResponse = await openAICreateMessage({
+          messages: messageHistory,
+          model: 'chatgpt-4o-latest'
+        });
+
+        // Format the aiMessage
+        for(const aChoice of openAIResponse.choices) {
+          if(aChoice.message && aChoice.message.content) {
+            aiMessages.push(aChoice.message.content);
+          }
+        }
+        break;
+      case AI_MODEL_OLLAMA: 
+        break;
+      default:
+        // TODO
+        // 1. Send the user the following message: "There's an internal error".
+        // 2. Report an error in Sentry.
+        // 3. Fail the Workflow.
+        return;
+    }
+
+    // If there's no message from 🤖.
+    if(aiMessages.length === 0) {
+      await twilioMessageCreate({
+        to: userPhoneNumber,
+        from: programmablePhoneNumber,
+        body: `Sorry, but there has been an issue with the 🤖. Please try again later 🙏.`
+      });
+
+      return;
+    }
+    
+    // 2. Send it to the 💬 Provider
+    const aiMessage = aiMessages.join('\n');
+    messageHistory.push({
+      'role': 'assistant',
+      'content': aiMessage
+    })
+    const outboundAIMessages = chunkString(aiMessage, 1600);
+
+    for(const aMessage of outboundAIMessages) {
+      await twilioMessageCreate({
+        to: userPhoneNumber,
+        from: programmablePhoneNumber,
+        body: aMessage
+      });
+    }
+
+    timer = new UpdatableTimer(Date.now() + waitingForUserResponseCalculation);
+    userMessages = [];
+  } while(!workflowInfo().continueAsNewSuggested);
+
+  while(byteSize(aRequest) > TEMPORAL_REQUEST_BLOB_SIZE_IN_BYTES ) {
+    messageHistory.shift();
   }
-  
-  // 2. Send it to the 💬 Provider
-  await twilioMessageCreate({
-    to: userPhoneNumber,
-    from: programmablePhoneNumber,
-    body: aiMessages.join(`\n`)
-  });
 
-  return;
-  // 3. Check to see if you need to do Continue As New
-
-  //workflowInfo().continueAsNewSuggested
-
-  // await continueAsNew<typeof chat>(aRequest);
+  await continueAsNew<typeof chat>(aRequest);
 }
 
+/**
+ * Generated by Google Gemini
+ * @param json 
+ * @returns 
+ */
+function byteSize(json: any) {
+  const jsonString = JSON.stringify(json);
+  return new Blob([jsonString]).size;
+}
+
+/**
+ * Generated by OpenAI
+ * @param str 
+ * @param chunkSize 
+ * @returns 
+ */
+function chunkString(str: string, chunkSize: number = 1600): string[] {
+  const chunks: string[] = [];
+  for (let i = 0; i < str.length; i += chunkSize) {
+      chunks.push(str.substring(i, i + chunkSize));
+  }
+  return chunks;
+}
 
 // Source: https://github.com/temporalio/samples-typescript/blob/main/timer-examples/src/updatable-timer.ts
 class UpdatableTimer implements PromiseLike<void> {

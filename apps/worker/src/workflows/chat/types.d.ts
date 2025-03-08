@@ -4,6 +4,7 @@ export interface WorkflowRequestChat {
   aiModel?: string;
   chatSlidingWindowInSecs?: number;
   waitingForUserResponseInMins?: number;
+  messageHistory?: Array<any>;
 }
 
 export interface WorkflowSignalMessage {
