@@ -2,6 +2,8 @@
 
 This repository demonstrates how to orchestrate messaging communication with an AI using Temporal.
 
+![](./assets/Temporal-Messaging-AI-Demo.gif)
+
 ## Prerequisite
 
 ### 💻 Local Development
@@ -56,3 +58,7 @@ Run the following command:
 ## Optional TODOs
 - [ ] Support VPS
 - [ ] Support [Sentry](https://sentry.io/)
+
+### Things to consider
+
+- [Twilio Sandbox Limitations](https://www.twilio.com/docs/whatsapp/sandbox#twilio-sandbox-limitations)

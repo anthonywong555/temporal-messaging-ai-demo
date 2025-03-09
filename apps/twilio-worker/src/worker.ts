@@ -25,6 +25,7 @@ async function run() {
     const twilioAPISecret = getEnv('TWILIO_API_SECRET');
     const twilioClient = new TwilioClient(twilioAccountSid, twilioAPIKey, twilioAPISecret);
 
+    const maxTaskQueueActivitiesPerSecond = Number(getEnv('TEMPORAL_MAX_TASK_QUEUE_ACTIVITIES_PER_SECOND', '30'));
     const resourceBasedTunerOptions:ResourceBasedTunerOptions = {
       targetMemoryUsage: 0.7,
       targetCpuUsage: 0.7,
@@ -50,6 +51,7 @@ async function run() {
       connection,
       namespace,
       taskQueue,
+      maxTaskQueueActivitiesPerSecond,
       activities: {...createTwilioActivites(twilioClient)},
       dataConverter: await getDataConverter(),
     });

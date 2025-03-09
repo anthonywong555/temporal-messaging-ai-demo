@@ -1,16 +1,16 @@
-app = 'twilio-worker'
-primary_region = 'ewr'
+app = "twilio-worker"
+primary_region = "ewr"
 
 [build]
-  dockerfile = '../apps/twilio-worker/fly.Dockerfile'
-  ignorefile = '../apps/twilio-worker/.dockerignore'
+  dockerfile = "../apps/twilio-worker/fly.Dockerfile"
+  ignorefile = "../apps/twilio-worker/.dockerignore"
 
 [env]
-  NODE_ENV = 'production'
-  TEMPORAL_TASK_QUEUE = 'twilio'
-  TEMPORAL_WORKER_STATUS_HTTP_PORT = '3001'
-  TEMPORAL_WORKER_METRIC = 'PROMETHEUS'
-  TEMPORAL_METRICS_PROMETHEUS_ADDRESS = '0.0.0.0:9464'
+  NODE_ENV = "production"
+  TEMPORAL_TASK_QUEUE = "twilio"
+  TEMPORAL_WORKER_STATUS_HTTP_PORT = "3001"
+  TEMPORAL_WORKER_METRIC = "PROMETHEUS"
+  TEMPORAL_METRICS_PROMETHEUS_ADDRESS = "0.0.0.0:9464"
 
 [http_service]
   internal_port = 3001
@@ -18,21 +18,23 @@ primary_region = 'ewr'
   auto_stop_machines = true
   auto_start_machines = true
   min_machines_running = 1
-  processes = ['app']
+  processes = ["app"]
 
 [[http_service.checks]]
-  interval = '10m0s'
-  timeout = '9m'
-  grace_period = '10s'
-  method = 'GET'
-  path = '/'
+  interval = "10m0s"
+  timeout = "9m"
+  grace_period = "10s"
+  method = "GET"
+  path = "/"
 
 [[vm]]
-  memory = '4gb'
-  cpu_kind = 'performance'
+  size = "performance-1x"
+  memory = "4gb"
+  cpu_kind = "performance"
   cpus = 1
+  processes = ["app"]
 
 [[metrics]]
   port = 9464
-  path = '/metrics'
+  path = "/metrics"
   https = false

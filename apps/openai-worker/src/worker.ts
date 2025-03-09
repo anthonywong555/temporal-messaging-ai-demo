@@ -23,6 +23,8 @@ async function run() {
     const OPENAI_API_KEY = getEnv('OPENAI_API_KEY');
     const openAIClient = new OpenAIClient(OPENAI_API_KEY);
 
+    const maxTaskQueueActivitiesPerSecond = Number(getEnv('TEMPORAL_MAX_TASK_QUEUE_ACTIVITIES_PER_SECOND', '0.33'));
+
     const resourceBasedTunerOptions:ResourceBasedTunerOptions = {
       targetMemoryUsage: 0.7,
       targetCpuUsage: 0.7,
@@ -48,6 +50,7 @@ async function run() {
       connection,
       namespace,
       taskQueue,
+      maxTaskQueueActivitiesPerSecond,
       activities: {...createOpenAIActivites(openAIClient)},
       dataConverter: await getDataConverter(),
     });

@@ -5,6 +5,7 @@ export interface WorkflowRequestChat {
   chatSlidingWindowInSecs?: number;
   waitingForUserResponseInMins?: number;
   messageHistory?: Array<any>;
+  isCAN: boolean;
 }
 
 export interface WorkflowSignalMessage {

@@ -1,4 +1,4 @@
-import { proxyActivities, workflowInfo, defineSignal, setHandler, condition, continueAsNew } from '@temporalio/workflow';
+import { proxyActivities, workflowInfo, defineSignal, setHandler, condition, continueAsNew, sleep } from '@temporalio/workflow';
 import type { WorkflowRequestChat, WorkflowSignalMessage } from './types';
 import { createTwilioActivites } from '@temporal-messaging-ai-demo/twilio';
 import { createAnthropicActivites } from '@temporal-messaging-ai-demo/anthropic-ai';
@@ -59,14 +59,24 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
     chatSlidingWindowInSecs = 60, 
     waitingForUserResponseInMins = 10,
     userPhoneNumber, 
-    programmablePhoneNumber 
+    programmablePhoneNumber,
+    isCAN
   } = aRequest;
 
   // Create a Sliding Window
   // Allow users to send a chain of messages before sending over to an 🤖.
   const waitingForUserResponseCalculation = waitingForUserResponseInMins * 60 * 1000;
   const targetDeadline = Date.now() + waitingForUserResponseCalculation;
+
   let timer = new UpdatableTimer(targetDeadline);
+
+  if(!isCAN) {
+    await twilioMessageCreate({
+      to: userPhoneNumber,
+      from: programmablePhoneNumber,
+      body: `✅ Message Received! \n🤖 ${aiModel} is starting a new 🧵! \n📟 Beep Boop!`
+    });
+  }
   
   setHandler(addMessage, (aMessage: WorkflowSignalMessage) => {
     userMessages.push(aMessage.message);
@@ -83,6 +93,13 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
     // If there's no message within the history
     // then simply end the workflow
     if(userMessages.length === 0) {
+      if(messageHistory.length > 0) {
+        await twilioMessageCreate({
+          to: userPhoneNumber,
+          from: programmablePhoneNumber,
+          body: `Closing 🧵. Good Bye 🤖👋!`
+        });
+      }
       return;
     }
 
@@ -163,6 +180,7 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
     } else {
       let part = 1;
       for(const aMessage of outboundAIMessages) {
+        await sleep('1s');
         await twilioMessageCreate({
           to: userPhoneNumber,
           from: programmablePhoneNumber,
@@ -182,7 +200,7 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
     }
   } while(!workflowInfo().continueAsNewSuggested);
 
-  await continueAsNew<typeof chat>(aRequest);
+  await continueAsNew<typeof chat>({...aRequest, isCAN: true});
 }
 
 /**
