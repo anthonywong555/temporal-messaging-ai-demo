@@ -1,0 +1,64 @@
+{
+  "name": "@temporal-messaging-ai-demo/anthropic-worker",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf ./.turbo ./dist tsconfig.tsbuildinfo",
+    "dev": "ts-node src/worker.ts",
+    "dev:watch": "nodemon src/worker.ts",
+    "build:code": "tsc --build",
+    "build.watch": "tsc --build --watch",
+    "build:workflows": "ts-node src/scripts/create-bundle.ts",
+    "lint": "eslint .",
+    "start": "ts-node src/worker.ts",
+    "start.watch": "nodemon src/worker.ts",
+    "workflow": "ts-node src/client.ts",
+    "preview": "node --env-file=.env.preview.local dist/worker.js",
+    "sentry:sourcemaps:inject": "sentry-cli sourcemaps inject ./dist",
+    "sentry:sourcemaps:upload": "sentry-cli sourcemaps upload --org=$SENTRY_ORG --project=$SENTRY_PROJECT --auth-token=$SENTRY_AUTH_TOKEN --release=0.0.1 ./dist --log-level=debug",
+    "full:dev": "npm run build:code && npm run build:workflows && npm run sentry:sourcemaps:inject && npm run sentry:sourcemaps:upload"
+  },
+  "nodemonConfig": {
+    "execMap": {
+      "ts": "ts-node"
+    },
+    "ext": "ts",
+    "watch": [
+      "src"
+    ],
+    "events": {
+      "restart": "npm run full:dev"
+    }
+  },
+  "dependencies": {
+    "@temporal-messaging-ai-demo/common": "*",
+    "@temporal-messaging-ai-demo/temporalio": "*",
+    "@temporal-messaging-ai-demo/anthropic-ai": "*",
+    "@sentry/cli": "^2.33.1",
+    "@sentry/core": "^8.47.0",
+    "@sentry/node": "^8.9.2",
+    "@sentry/profiling-node": "^8.25.0",
+    "@temporalio/activity": "^1.11.5",
+    "@temporalio/worker": "^1.11.5",
+    "@temporalio/workflow": "^1.11.5",
+    "dotenv": "^16.4.7"
+  },
+  "devDependencies": {
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^20.14.14",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-deprecation": "^1.5.0",
+    "nodemon": "^3.1.4",
+    "prettier": "^3.3.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "description": "This sample shows how to configure [Sentry](https://sentry.io) to intercept and capture errors from the Temporal SDK.",
+  "main": ".eslintrc.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

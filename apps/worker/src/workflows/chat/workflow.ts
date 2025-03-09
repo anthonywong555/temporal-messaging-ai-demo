@@ -117,7 +117,7 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
         const anthropicResponse = await anthropicCreateMessage({
           max_tokens: 1024,
           messages: messageHistory,
-          model: 'claude-3-sonnet-latest'
+          model: 'claude-3-7-sonnet-latest'
         });
         for(const aContent of anthropicResponse.content) {
           const aTextBlock = aContent as Anthropic.TextBlock;
