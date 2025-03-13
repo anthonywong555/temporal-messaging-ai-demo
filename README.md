@@ -17,11 +17,24 @@ This repository demonstrates how to orchestrate messaging communication with an 
 - [Temporal Cloud](https://temporal.io/get-cloud)
 - [Fly.io](https://fly.io/)
 
-## How to get started:
+## How to get started in local development
 
-1. git clone.
+1. git clone
 1. npm install
+1. Clone the `apps/*/.env.example` to `apps/*/.env`
 1. npm run dev
+
+## How to connect to Temporal Cloud
+
+1. Set the following environment variables:
+```sh
+export TEMPORAL_ADDRESS=
+export TEMPORAL_NAMESPACE=
+export TEMPORAL_API_KEY=
+export TEMPORAL_AUTH_METHOD=
+```
+
+2. Then execute: `npm run dev`
 
 ## Deploying to ☁️
 
