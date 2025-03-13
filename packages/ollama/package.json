@@ -1,0 +1,25 @@
+{
+  "name": "@temporal-messaging-ai-demo/ollama",
+  "version": "0.0.1",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf ./dist .turbo",
+    "dev": "npm run build --watch",
+    "build": "tsup index.ts src/* --format cjs,esm --dts --outDir dist",
+    "build.watch": "npm run build --watch",
+    "lint": "TIMING=1 eslint \"**/*.ts*\""
+  },
+  "dependencies": {
+    "@temporal-messaging-ai-demo/common": "*",
+    "ollama": "^0.5.14"
+  },
+  "devDependencies": {
+    "@temporal-messaging-ai-demo/tsconfig": "*",
+    "eslint": "^8.57.1",
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3"
+  }
+}

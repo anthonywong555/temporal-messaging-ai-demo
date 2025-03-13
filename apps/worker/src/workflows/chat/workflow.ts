@@ -3,6 +3,7 @@ import type { WorkflowRequestChat, WorkflowSignalMessage } from './types';
 import { createTwilioActivites } from '@temporal-messaging-ai-demo/twilio';
 import { createAnthropicActivites } from '@temporal-messaging-ai-demo/anthropic-ai';
 import { createOpenAIActivites } from '@temporal-messaging-ai-demo/openai';
+import { createOllamaActivites } from '@temporal-messaging-ai-demo/ollama';
 import type Anthropic from '@anthropic-ai/sdk';
 
 /**
@@ -34,6 +35,15 @@ const { openAICreateMessage } = proxyActivities<ReturnType<typeof createOpenAIAc
   },
   taskQueue: 'openai'
 });
+
+const { ollamaChat } = proxyActivities<ReturnType<typeof createOllamaActivites>>({
+  startToCloseTimeout: '1m',
+  retry: {
+    maximumInterval: '5s', // Just for demo purposes. Usually this should be larger.
+    maximumAttempts: 3
+  },
+  taskQueue: 'ollama'
+})
 
 /**
  * Signals
@@ -141,6 +151,12 @@ export async function chat(aRequest: WorkflowRequestChat): Promise<void> {
         }
         break;
       case AI_MODEL_OLLAMA: 
+        const ollamaResponse = await ollamaChat({
+          model: 'llama3',
+          messages: messageHistory
+        });
+
+        aiMessages.push(ollamaResponse.message.content as string);
         break;
       default:
         // TODO

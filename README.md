@@ -59,6 +59,8 @@ Run the following command:
 - [ ] Support VPS
 - [ ] Support [Sentry](https://sentry.io/)
 
-### Things to consider
+### Productionizing | Things to consider
 
-- [Twilio Sandbox Limitations](https://www.twilio.com/docs/whatsapp/sandbox#twilio-sandbox-limitations)
+* Take a look at the [Twilio Sandbox Limitations](https://www.twilio.com/docs/whatsapp/sandbox#twilio-sandbox-limitations) and set this number on to the `twilio-worker` app secrets as the *TEMPORAL_MAX_TASK_QUEUE_ACTIVITIES_PER_SECOND*.
+* Consider increasing the `temporal-worker.toml` VMs *CPU* and *RAM*: CPU: performace-4x and RAM: 8GB
+    * In TS, Workflows are run on separate thread pool.

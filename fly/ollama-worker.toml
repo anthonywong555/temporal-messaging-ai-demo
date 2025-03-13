@@ -1,0 +1,38 @@
+app = 'ollama-worker'
+primary_region = 'ewr'
+
+[build]
+  dockerfile = '../apps/ollama-worker/fly.Dockerfile'
+  ignorefile = '../apps/ollama-worker/.dockerignore'
+
+[env]
+  NODE_ENV = 'production'
+  TEMPORAL_TASK_QUEUE = 'ollama'
+  TEMPORAL_WORKER_STATUS_HTTP_PORT = '3001'
+  TEMPORAL_WORKER_METRIC = 'PROMETHEUS'
+  TEMPORAL_METRICS_PROMETHEUS_ADDRESS = '0.0.0.0:9464'
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ['app']
+
+[[http_service.checks]]
+  interval = '10m0s'
+  timeout = '9m'
+  grace_period = '10s'
+  method = 'GET'
+  path = '/'
+
+[[vm]]
+  memory = '4gb'
+  cpu_kind = 'performance'
+  cpus = 1
+
+[[metrics]]
+  port = 9464
+  path = '/metrics'
+  https = false

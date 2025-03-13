@@ -1,0 +1,23 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": [
+    "//"
+  ],
+  "tasks": {
+    "build:code": {
+      "dependsOn": ["^build:code"],
+      "cache": false
+    },
+    "build:workflows": {
+      "dependsOn": ["build:code"],
+      "cache": false
+    },
+    "build": {
+      "dependsOn": ["build:code", "build:workflows"],
+      "outputs": ["dist/**"]
+    },
+    "preview": {
+      "cache": false
+    }
+  }
+}

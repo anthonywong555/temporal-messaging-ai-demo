@@ -1,5 +1,5 @@
 {
-  "name": "@temporal-messaging-ai-demo/worker",
+  "name": "@temporal-messaging-ai-demo/ollama-worker",
   "version": "0.0.1",
   "private": true,
   "scripts": {
@@ -14,6 +14,8 @@
     "start.watch": "nodemon src/worker.ts",
     "workflow": "ts-node src/client.ts",
     "preview": "node --env-file=.env.preview.local dist/worker.js",
+    "sentry:sourcemaps:inject": "sentry-cli sourcemaps inject ./dist",
+    "sentry:sourcemaps:upload": "sentry-cli sourcemaps upload --org=$SENTRY_ORG --project=$SENTRY_PROJECT --auth-token=$SENTRY_AUTH_TOKEN --release=0.0.1 ./dist --log-level=debug",
     "full:dev": "npm run build:code && npm run build:workflows && npm run sentry:sourcemaps:inject && npm run sentry:sourcemaps:upload"
   },
   "nodemonConfig": {
@@ -31,10 +33,7 @@
   "dependencies": {
     "@temporal-messaging-ai-demo/common": "*",
     "@temporal-messaging-ai-demo/temporalio": "*",
-    "@temporal-messaging-ai-demo/twilio": "*",
-    "@temporal-messaging-ai-demo/openai": "*",
     "@temporal-messaging-ai-demo/ollama": "*",
-    "@temporal-messaging-ai-demo/anthropic-ai": "*",
     "@sentry/cli": "^2.33.1",
     "@sentry/core": "^8.47.0",
     "@sentry/node": "^8.9.2",

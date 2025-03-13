@@ -1,0 +1,26 @@
+app = 'ollama-temporal-test'
+primary_region = 'ord'
+
+[build]
+  image = 'ollama/ollama:latest'
+
+[env]
+  PORT = '11434'
+
+[[mounts]]
+  source = 'models'
+  destination = '/root/.ollama'
+  initial_size = '20gb'
+  auto_extend_size_threshold = 80
+  auto_extend_size_increment = '10gb'
+  auto_extend_size_limit = '100gb'
+
+[http_service]
+  internal_port = 11434
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  size = 'l40s'
