@@ -2,7 +2,7 @@
 
 This repository demonstrates how to orchestrate messaging communication with an AI using Temporal.
 
-![](./assets/Temporal-Messaging-AI-Demo.gif)
+![Demo Gif](./assets/Temporal-Messaging-AI-Demo.gif)
 
 ## Prerequisite
 
@@ -32,6 +32,8 @@ This repository demonstrates how to orchestrate messaging communication with an 
 1. Take a note of the Namespace and Address. You will need it for the following step.
 
 ### Fly.io
+
+![Architecture Diagram](./assets/Architecture-Diagram.png)
 
 #### Create Apps
 
@@ -86,7 +88,7 @@ After that, follow the steps above with the `ollama-worker`.
 
 ## 📋 TODOs
 
-- [ ] Architecture Diagram
+- [X] Architecture Diagram
 - [X] Research on how you can deploy Fly.io runtime secrets using a bash script. 
 - [ ] Support `preview` build in Local Development
 
