@@ -33,26 +33,61 @@ This repository demonstrates how to orchestrate messaging communication with an 
 
 ### Fly.io
 
-Set the following [runtime secrets](https://fly.io/docs/apps/secrets/) in your Fly App.
+#### Create Apps
 
+Run the following commands:
+```sh
+fly apps create temporal-worker
+fly apps create twilio-worker
+fly apps create [anthropic-worker | openai-worker | ollama-worker]
+```
+
+Check that the app variable name in the fly/fly.[app-name].toml file is the same name you used to create the app in the previous step:
+```sh
+app = 'temporal-worker-wild-surf-7014' <- this line
+primary_region = 'ewr'
+```
+
+#### Deploy Secrets
+
+Create an .env file with the following:
 | key                  | value                                        |
 |----------------------|----------------------------------------------|
-| NODE_ENV             | production                                   |
 | TEMPORAL_ADDRESS     | < region >.<aws \| gcp>.api.temporal.io:7233 |
 | TEMPORAL_NAMESPACE   | <your namespace>                             |
 | TEMPORAL_AUTH_METHOD | API_KEY                                      |
 | TEMPORAL_API_KEY     | <your api key>                               |
 
-Run the following command:
-
+Run the following command to bulk deploy run time secrets.
 ```sh
-./fly/deploy.sh
+fly secrets import < .env -a temporal-worker
+fly secrets import < .env -a twilio-worker
+fly secrets import < .env -a [anthropic-worker | openai-worker | ollama-worker]
 ```
+
+Deploy additional secrets for each respective app. Refer to the `.env.example` file in the apps folder.
+
+#### Deploy Apps
+
+Run the following commands:
+```sh
+fly apps deploy --config temporal-worker
+fly apps deploy --config twilio-worker
+fly apps deploy --config [anthropic-worker | openai-worker | ollama-worker]
+```
+
+#### Ollama
+
+If you want to run your own Ollama, then watch the following videos on how to do this: 
+- [How to Self-Host an LLM | Fly GPUs + Ollama](https://youtu.be/T1yVMs7P-Ng?si=w06-NQEO7qwvAcm8)
+- [Boost Your App with Self-Hosted LLMs on Fly.io – Step-by-Step Guide](https://youtu.be/qGucJNu4CD4?si=3MhXNViUZ2EFDOwy)
+
+After that, follow the steps above with the `ollama-worker`.
 
 ## 📋 TODOs
 
 - [ ] Architecture Diagram
-- [ ] Research on how you can deploy Fly.io runtime secrets using a bash script. 
+- [X] Research on how you can deploy Fly.io runtime secrets using a bash script. 
 - [ ] Support `preview` build in Local Development
 
 ## Optional TODOs
